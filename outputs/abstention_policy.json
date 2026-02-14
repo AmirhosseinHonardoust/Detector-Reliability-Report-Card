@@ -1,0 +1,8 @@
+{
+  "recommended_threshold": 0.66,
+  "target_coverage": 0.7,
+  "estimated_coverage": 0.7246376811594203,
+  "estimated_accuracy": 0.82,
+  "estimated_macro_f1": 0.6508196721311476,
+  "abstain_rule": "abstain if max_proba < threshold OR (disagree_across_models and max_proba < threshold+0.05)"
+}

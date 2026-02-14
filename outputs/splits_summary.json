@@ -1,0 +1,31 @@
+{
+  "n_total": 686,
+  "n_train": 411,
+  "n_val": 137,
+  "n_test": 138,
+  "label_counts_total": {
+    "ai": 335,
+    "human": 181,
+    "post_edited_ai": 170
+  },
+  "label_counts_train": {
+    "ai": 201,
+    "human": 108,
+    "post_edited_ai": 102
+  },
+  "label_counts_val": {
+    "ai": 67,
+    "human": 36,
+    "post_edited_ai": 34
+  },
+  "label_counts_test": {
+    "ai": 67,
+    "human": 37,
+    "post_edited_ai": 34
+  },
+  "labels": [
+    "ai",
+    "human",
+    "post_edited_ai"
+  ]
+}
