@@ -2,7 +2,7 @@
   <h1 align="center">Detector Reliability Report Card </h1>
     <p align="center">
 <div align="center">
-
+ 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B)
 ![Task](https://img.shields.io/badge/Task-AI%20vs%20Human%20Detection-purple)
