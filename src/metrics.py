@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
+
 
 def expected_calibration_error(y_true: np.ndarray, proba: np.ndarray, n_bins: int = 10) -> float:
     y_true = np.asarray(y_true)
@@ -21,6 +23,7 @@ def expected_calibration_error(y_true: np.ndarray, proba: np.ndarray, n_bins: in
         ece += (mask.sum() / n) * abs(correct[mask].mean() - conf[mask].mean())
     return float(ece)
 
+
 def multiclass_brier(y_true: np.ndarray, proba: np.ndarray, n_classes: int) -> float:
     y_true = np.asarray(y_true)
     proba = np.asarray(proba)
@@ -28,7 +31,10 @@ def multiclass_brier(y_true: np.ndarray, proba: np.ndarray, n_classes: int) -> f
     oh[np.arange(len(y_true)), y_true] = 1.0
     return float(np.mean(np.sum((proba - oh) ** 2, axis=1)))
 
-def compute_overall(y_true: np.ndarray, y_pred: np.ndarray, proba: np.ndarray, labels: list[str]) -> dict:
+
+def compute_overall(
+    y_true: np.ndarray, y_pred: np.ndarray, proba: np.ndarray, labels: list[str]
+) -> dict:
     return {
         "accuracy": float(accuracy_score(y_true, y_pred)),
         "macro_f1": float(f1_score(y_true, y_pred, average="macro")),
@@ -38,6 +44,7 @@ def compute_overall(y_true: np.ndarray, y_pred: np.ndarray, proba: np.ndarray, l
         "confusion_matrix": confusion_matrix(y_true, y_pred).tolist(),
     }
 
+
 def coverage_curve(y_true: np.ndarray, proba: np.ndarray, thresholds: np.ndarray) -> pd.DataFrame:
     conf = proba.max(axis=1)
     pred = proba.argmax(axis=1)
@@ -46,12 +53,16 @@ def coverage_curve(y_true: np.ndarray, proba: np.ndarray, thresholds: np.ndarray
         keep = conf >= t
         cov = float(keep.mean())
         if keep.sum() == 0:
-            rows.append({"threshold": float(t), "coverage": cov, "accuracy": np.nan, "macro_f1": np.nan})
+            rows.append(
+                {"threshold": float(t), "coverage": cov, "accuracy": np.nan, "macro_f1": np.nan}
+            )
             continue
-        rows.append({
-            "threshold": float(t),
-            "coverage": cov,
-            "accuracy": float(accuracy_score(y_true[keep], pred[keep])),
-            "macro_f1": float(f1_score(y_true[keep], pred[keep], average="macro")),
-        })
+        rows.append(
+            {
+                "threshold": float(t),
+                "coverage": cov,
+                "accuracy": float(accuracy_score(y_true[keep], pred[keep])),
+                "macro_f1": float(f1_score(y_true[keep], pred[keep], average="macro")),
+            }
+        )
     return pd.DataFrame(rows)

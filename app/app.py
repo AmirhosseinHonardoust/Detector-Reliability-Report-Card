@@ -1,11 +1,11 @@
-import sys
-import json
 import base64
+import json
+import sys
 from pathlib import Path
 
 import pandas as pd
-import streamlit as st
 import plotly.express as px
+import streamlit as st
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -34,7 +34,9 @@ def _st_image_fixed(path: Path, caption: str, height_px: int = 340) -> None:
 
 st.set_page_config(page_title="Detector Reliability Report Card", layout="wide")
 st.title("Detector Reliability Report Card")
-st.caption("Calibration + abstention + decision-safe UI for human vs AI vs post-edited AI detection.")
+st.caption(
+    "Calibration + abstention + decision-safe UI for human vs AI vs post-edited AI detection."
+)
 
 DEFAULT_INPUT = PROJECT_ROOT / "data" / "raw" / "ai_human_detection.csv"
 OUT_DIR = PROJECT_ROOT / "outputs"
@@ -98,14 +100,18 @@ with tab_report:
     with r1[0]:
         _st_image_fixed(FIG_DIR / "confusion_matrix.png", "Confusion matrix", height_px=340)
     with r1[1]:
-        _st_image_fixed(FIG_DIR / "coverage_vs_accuracy.png", "Coverage vs performance", height_px=340)
+        _st_image_fixed(
+            FIG_DIR / "coverage_vs_accuracy.png", "Coverage vs performance", height_px=340
+        )
 
     # Row 2
     r2 = st.columns(2, gap="large")
     with r2[0]:
         _st_image_fixed(FIG_DIR / "reliability_diagram.png", "Reliability diagram", height_px=340)
     with r2[1]:
-        _st_image_fixed(FIG_DIR / "probability_histograms.png", "Confidence histogram", height_px=340)
+        _st_image_fixed(
+            FIG_DIR / "probability_histograms.png", "Confidence histogram", height_px=340
+        )
 
     if policy:
         st.subheader("Recommended abstention policy")
@@ -160,14 +166,14 @@ with tab_triage:
                 width="stretch",
             )
             st.caption(
-                f"Rule: abstain if confidence < {thr:.2f} OR (model disagreement and confidence < {min(0.99, thr+0.05):.2f})."
+                f"Rule: abstain if confidence < {thr:.2f} OR "
+                f"(model disagreement and confidence < {min(0.99, thr+0.05):.2f})."
             )
         else:
             st.info("Paste some text to see the output format.")
 
 with tab_notes:
-    st.markdown(
-        """
+    st.markdown("""
 ### Decision safety notes
 - **Accuracy ≠ trust.** A model can be accurate but overconfident.
 - **ECE** measures calibration error on confidence bins (lower is better).
@@ -177,5 +183,4 @@ with tab_notes:
 - Persist the trained model (joblib) and run true inference in the UI.
 - Add slice audits: performance by language/domain/edit_level.
 - Add drift monitoring: score distribution shifts over time.
-        """.strip()
-    )
+        """.strip())

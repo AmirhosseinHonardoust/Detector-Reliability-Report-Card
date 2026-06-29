@@ -1,8 +1,11 @@
 from __future__ import annotations
+
 from pathlib import Path
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+
 
 def plot_confusion(cm: np.ndarray, labels: list[str], out_path: Path) -> None:
     plt.figure(figsize=(6, 5))
@@ -22,14 +25,17 @@ def plot_confusion(cm: np.ndarray, labels: list[str], out_path: Path) -> None:
     plt.savefig(out_path, dpi=170)
     plt.close()
 
-def plot_reliability(y_true: np.ndarray, proba: np.ndarray, out_path: Path, n_bins: int = 10) -> None:
+
+def plot_reliability(
+    y_true: np.ndarray, proba: np.ndarray, out_path: Path, n_bins: int = 10
+) -> None:
     conf = proba.max(axis=1)
     pred = proba.argmax(axis=1)
     correct = (pred == y_true).astype(float)
     bins = np.linspace(0.0, 1.0, n_bins + 1)
     bin_acc, bin_conf = [], []
     for i in range(n_bins):
-        lo, hi = bins[i], bins[i+1]
+        lo, hi = bins[i], bins[i + 1]
         mask = (conf > lo) & (conf <= hi) if i > 0 else (conf >= lo) & (conf <= hi)
         if mask.sum() == 0:
             continue
@@ -46,6 +52,7 @@ def plot_reliability(y_true: np.ndarray, proba: np.ndarray, out_path: Path, n_bi
     plt.savefig(out_path, dpi=170)
     plt.close()
 
+
 def plot_coverage(curve: pd.DataFrame, out_path: Path) -> None:
     plt.figure(figsize=(7, 5))
     plt.plot(curve["coverage"], curve["accuracy"], marker="o", label="accuracy")
@@ -59,6 +66,7 @@ def plot_coverage(curve: pd.DataFrame, out_path: Path) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(out_path, dpi=170)
     plt.close()
+
 
 def plot_confidence_hist(proba: np.ndarray, out_path: Path) -> None:
     conf = proba.max(axis=1)
