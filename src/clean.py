@@ -17,7 +17,7 @@ def clean_df(df: pd.DataFrame) -> pd.DataFrame:
         if not obj_cols:
             raise ValueError("No obvious text column found.")
         lengths = {c: out[c].astype(str).str.len().mean() for c in obj_cols}
-        text_col = max(lengths, key=lengths.get)
+        text_col = max(lengths, key=lambda c: lengths[c])
 
     # find label column
     label_col = None

@@ -31,8 +31,8 @@ def run(
     calibration_method: str = "sigmoid",
     recommend_target_coverage: float = 0.7,
 ) -> dict:
-    out_dir = Path(out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = Path(out_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
     fig_dir = Path(figures_dir)
     fig_dir.mkdir(parents=True, exist_ok=True)
 
@@ -108,8 +108,8 @@ def run(
     out_pred["pred_label"] = [inv[i] for i in pred]
     out_pred["confidence"] = conf
     out_pred["disagree_word_char"] = disagree.astype(int)
-    write_csv(out_pred, out_dir / "test_predictions.csv")
-    write_csv(curve, out_dir / "coverage_curve.csv")
+    write_csv(out_pred, out_path / "test_predictions.csv")
+    write_csv(curve, out_path / "coverage_curve.csv")
 
     split_summary = {
         "n_total": int(len(df)),
@@ -122,9 +122,9 @@ def run(
         "label_counts_test": test["label"].value_counts().to_dict(),
         "labels": labels,
     }
-    write_json(split_summary, out_dir / "splits_summary.json")
-    write_json(overall, out_dir / "metrics_overall.json")
-    write_json(policy, out_dir / "abstention_policy.json")
+    write_json(split_summary, out_path / "splits_summary.json")
+    write_json(overall, out_path / "metrics_overall.json")
+    write_json(policy, out_path / "abstention_policy.json")
 
     plot_confusion(np.array(overall["confusion_matrix"]), labels, fig_dir / "confusion_matrix.png")
     plot_reliability(y_test, proba, fig_dir / "reliability_diagram.png")
@@ -132,7 +132,7 @@ def run(
     plot_confidence_hist(proba, fig_dir / "probability_histograms.png")
 
     return {
-        "out_dir": str(out_dir),
+        "out_dir": str(out_path),
         "figures_dir": str(fig_dir),
         "policy": policy,
         "primary_model": primary,
