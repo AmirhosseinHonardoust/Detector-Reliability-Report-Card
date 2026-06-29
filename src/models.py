@@ -1,10 +1,13 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
+
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
-from sklearn.calibration import CalibratedClassifierCV
 
-from src.features import FeatureConfig, make_word_vectorizer, make_char_vectorizer
+from src.features import FeatureConfig, make_char_vectorizer, make_word_vectorizer
+
 
 @dataclass(frozen=True)
 class ModelConfig:
@@ -13,16 +16,30 @@ class ModelConfig:
     calibrate: bool = True
     calibration_method: str = "sigmoid"  # sigmoid or isotonic
 
+
 def build_word_model(fcfg: FeatureConfig, mcfg: ModelConfig):
-    base = Pipeline([
-        ("tfidf", make_word_vectorizer(fcfg)),
-        ("clf", LogisticRegression(C=mcfg.C, max_iter=mcfg.max_iter))
-    ])
-    return CalibratedClassifierCV(base, method=mcfg.calibration_method, cv=3) if mcfg.calibrate else base
+    base = Pipeline(
+        [
+            ("tfidf", make_word_vectorizer(fcfg)),
+            ("clf", LogisticRegression(C=mcfg.C, max_iter=mcfg.max_iter)),
+        ]
+    )
+    return (
+        CalibratedClassifierCV(base, method=mcfg.calibration_method, cv=3)
+        if mcfg.calibrate
+        else base
+    )
+
 
 def build_char_model(fcfg: FeatureConfig, mcfg: ModelConfig):
-    base = Pipeline([
-        ("tfidf", make_char_vectorizer(fcfg)),
-        ("clf", LogisticRegression(C=mcfg.C, max_iter=mcfg.max_iter))
-    ])
-    return CalibratedClassifierCV(base, method=mcfg.calibration_method, cv=3) if mcfg.calibrate else base
+    base = Pipeline(
+        [
+            ("tfidf", make_char_vectorizer(fcfg)),
+            ("clf", LogisticRegression(C=mcfg.C, max_iter=mcfg.max_iter)),
+        ]
+    )
+    return (
+        CalibratedClassifierCV(base, method=mcfg.calibration_method, cv=3)
+        if mcfg.calibrate
+        else base
+    )
