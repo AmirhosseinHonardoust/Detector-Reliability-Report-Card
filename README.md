@@ -270,6 +270,8 @@ Column names are detected automatically: `text` / `content` / `sentence` for tex
 
 ## How the Pipeline Works
 
+<div align="center">
+        
 | Step | What happens |
 |---|---|
 | A. Clean | Detect text/label columns, normalize labels, drop empty text |
@@ -280,6 +282,7 @@ Column names are detected automatically: `text` / `content` / `sentence` for tex
 | F. Evaluate | Accuracy, macro-F1, ECE, and Brier on held-out test data |
 | G. Sweep | Evaluate many thresholds to build the coverage curve |
 | H. Save | Write metrics, policy, curves, predictions, and figures |
+</div>
 
 Baselines are used because they are quick to train, easy to debug, and a strong reference point before heavier models. Calibration matters because raw scores are often miscalibrated, and thresholding on miscalibrated confidence is dangerous.
 
@@ -304,7 +307,7 @@ Example results from the included example dataset:
 <div align="center">
 
 | Metric | Example value |
-|---|---:|
+|---|---|
 | Accuracy | 0.739 |
 | Macro-F1 | 0.617 |
 | ECE | 0.068 |
