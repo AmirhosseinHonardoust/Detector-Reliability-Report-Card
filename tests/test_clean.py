@@ -38,6 +38,34 @@ def test_missing_text_column_raises():
         clean_df(df)
 
 
+def test_fallback_text_column_is_longest_string_column():
+    # no column named text/content/sentence -> pick the longest string column
+    df = pd.DataFrame(
+        {
+            "message": ["a fairly long sentence here", "another long sentence too"],
+            "category": ["ai", "human"],
+        }
+    )
+    out = clean_df(df)
+    assert out["text"].tolist() == [
+        "a fairly long sentence here",
+        "another long sentence too",
+    ]
+    assert set(out["label"]) == {"ai", "human"}
+
+
+def test_fallback_label_column_by_cardinality():
+    # label detected by 2..6 unique values among string columns
+    df = pd.DataFrame(
+        {
+            "body": ["some long text one", "some long text two", "some long text three"],
+            "kind": ["ai", "human", "ai"],
+        }
+    )
+    out = clean_df(df)
+    assert set(out["label"]) == {"ai", "human"}
+
+
 def test_input_not_mutated():
     df = pd.DataFrame({"text": [" Hello "], "label": [" AI "]})
     before = df.copy(deep=True)

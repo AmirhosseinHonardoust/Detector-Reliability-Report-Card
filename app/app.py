@@ -1,6 +1,7 @@
 import base64
 import json
 import sys
+import tempfile
 from pathlib import Path
 
 import pandas as pd
@@ -52,8 +53,7 @@ with st.sidebar:
 
 effective_input = Path(input_path)
 if uploaded is not None:
-    tmp = PROJECT_ROOT / "data" / "raw" / "uploaded.csv"
-    tmp.parent.mkdir(parents=True, exist_ok=True)
+    tmp = Path(tempfile.mkdtemp(prefix="drrc_upload_")) / "uploaded.csv"
     tmp.write_bytes(uploaded.getbuffer())
     effective_input = tmp
 
