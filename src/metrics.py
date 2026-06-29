@@ -41,7 +41,9 @@ def compute_overall(
         "ece": expected_calibration_error(y_true, proba, n_bins=10),
         "brier": multiclass_brier(y_true, proba, n_classes=len(labels)),
         "labels": labels,
-        "confusion_matrix": confusion_matrix(y_true, y_pred).tolist(),
+        "confusion_matrix": confusion_matrix(
+            y_true, y_pred, labels=list(range(len(labels)))
+        ).tolist(),
     }
 
 

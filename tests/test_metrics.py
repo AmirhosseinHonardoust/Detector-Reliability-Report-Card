@@ -59,7 +59,16 @@ def test_coverage_curve_empty_subset_is_nan():
     assert np.isnan(row["macro_f1"])
 
 
-def test_compute_overall_keys_and_values():
+def test_compute_overall_confusion_matrix_is_full_size_when_class_absent():
+    # class index 2 ("c") never appears in y_true or y_pred
+    y_true = np.array([0, 0, 1])
+    y_pred = np.array([0, 1, 1])
+    proba = np.array([[0.7, 0.2, 0.1], [0.4, 0.5, 0.1], [0.2, 0.7, 0.1]])
+    out = compute_overall(y_true, y_pred, proba, labels=["a", "b", "c"])
+    cm = out["confusion_matrix"]
+    # 3x3, aligned with the 3 labels, despite "c" being unused
+    assert len(cm) == 3
+    assert all(len(row) == 3 for row in cm)
     y_true = np.array([0, 1])
     y_pred = np.array([0, 1])
     proba = np.array([[0.9, 0.1], [0.2, 0.8]])
