@@ -3,13 +3,14 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score
 
 from src.clean import clean_df
 from src.features import FeatureConfig
-from src.io import read_csv, write_csv, write_json
+from src.io_utils import read_csv, write_csv, write_json
 from src.metrics import compute_overall, coverage_curve
 from src.models import ModelConfig, build_char_model, build_word_model
 from src.reporting import plot_confidence_hist, plot_confusion, plot_coverage, plot_reliability
@@ -126,6 +127,17 @@ def run(
     write_json(overall, out_path / "metrics_overall.json")
     write_json(policy, out_path / "abstention_policy.json")
 
+    # Persist the fitted models + label order + threshold for live inference
+    # (see src/inference.py and the dashboard Triage tab).
+    bundle = {
+        "primary_model": primary_model,
+        "other_model": other_model,
+        "labels": labels,
+        "threshold": float(rec["threshold"]),
+        "primary_name": primary,
+    }
+    joblib.dump(bundle, out_path / "model.joblib", compress=3)
+
     plot_confusion(np.array(overall["confusion_matrix"]), labels, fig_dir / "confusion_matrix.png")
     plot_reliability(y_test, proba, fig_dir / "reliability_diagram.png")
     plot_coverage(curve, fig_dir / "coverage_vs_accuracy.png")
@@ -134,6 +146,7 @@ def run(
     return {
         "out_dir": str(out_path),
         "figures_dir": str(fig_dir),
+        "model_path": str(out_path / "model.joblib"),
         "policy": policy,
         "primary_model": primary,
         "labels": labels,
