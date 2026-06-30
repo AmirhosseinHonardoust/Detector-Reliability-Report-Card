@@ -11,6 +11,7 @@ import streamlit as st
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.inference import load_bundle, predict_texts  # noqa: E402
 from src.pipeline import run as run_pipeline  # noqa: E402
 
 
@@ -129,48 +130,40 @@ with tab_curve:
         st.info("Coverage curve not found.")
 
 with tab_triage:
-    st.subheader("Paste text → see decision-safe output format")
-    labels = metrics.get("labels", [])
+    st.subheader("Paste text → decision-safe output")
+    model_path = OUT_DIR / "model.joblib"
     text = st.text_area("Text", height=180, placeholder="Paste or type text here...")
 
-    st.caption(
-        "Note: this demo uses the saved test prediction table to show the output format. "
-        "For real inference, persist the trained model (joblib) and load it here."
-    )
-    if preds.empty:
-        st.info("Predictions table not found. Run pipeline.")
+    if not model_path.exists():
+        st.info(
+            "Live inference needs the saved model. Click **Run / Refresh** in the "
+            "sidebar (or run the pipeline) to generate `outputs/model.joblib`."
+        )
+    elif text.strip():
+        bundle = load_bundle(model_path)
+        result = predict_texts(bundle, [text])[0]
+        thr = float(bundle["threshold"])
+
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Predicted label", result["pred_label"])
+        col2.metric("Confidence", f"{result['confidence']:.3f}")
+        col3.metric("Decision", "ABSTAIN → review" if result["abstain"] else "AUTO-DECIDE")
+
+        st.plotly_chart(
+            px.bar(
+                x=list(result["probs"].keys()),
+                y=list(result["probs"].values()),
+                labels={"x": "class", "y": "probability"},
+            ),
+            width="stretch",
+        )
+        st.caption(
+            f"Rule: abstain if confidence < {thr:.2f} OR "
+            f"(model disagreement and confidence < {min(0.99, thr + 0.05):.2f}). "
+            f"Models disagree: {result['disagree']}."
+        )
     else:
-        if text.strip():
-            preds["len"] = preds["text"].astype(str).str.len()
-            qlen = len(text.strip())
-            row = preds.iloc[(preds["len"] - qlen).abs().argsort()[:1]].iloc[0]
-            probs = {lab: float(row[f"p_{lab}"]) for lab in labels}
-            pred_label = str(row["pred_label"])
-            conf = float(row["confidence"])
-            disagree = int(row.get("disagree_word_char", 0))
-
-            thr = float(policy.get("recommended_threshold", 0.7))
-            abstain = (conf < thr) or (disagree == 1 and conf < min(0.99, thr + 0.05))
-
-            col1, col2, col3 = st.columns(3)
-            col1.metric("Predicted label", pred_label)
-            col2.metric("Confidence", f"{conf:.3f}")
-            col3.metric("Decision", "ABSTAIN → review" if abstain else "AUTO-DECIDE")
-
-            st.plotly_chart(
-                px.bar(
-                    x=list(probs.keys()),
-                    y=list(probs.values()),
-                    labels={"x": "class", "y": "probability"},
-                ),
-                width="stretch",
-            )
-            st.caption(
-                f"Rule: abstain if confidence < {thr:.2f} OR "
-                f"(model disagreement and confidence < {min(0.99, thr+0.05):.2f})."
-            )
-        else:
-            st.info("Paste some text to see the output format.")
+        st.info("Paste some text to run the detector.")
 
 with tab_notes:
     st.markdown("""
@@ -180,7 +173,7 @@ with tab_notes:
 - **Coverage** is a real product metric: if you abstain too much, you lose usability.
 
 ### Make it production-grade
-- Persist the trained model (joblib) and run true inference in the UI.
-- Add slice audits: performance by language/domain/edit_level.
+- Refit the persisted model on all data and add slice audits (language/domain/edit_level).
 - Add drift monitoring: score distribution shifts over time.
+- Add cost-aware abstention tuned to review capacity.
         """.strip())

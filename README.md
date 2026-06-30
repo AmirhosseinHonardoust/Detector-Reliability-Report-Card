@@ -78,6 +78,7 @@ This project can:
 - Recommend an abstention threshold for a target auto-decision coverage
 - Save machine-readable metrics, policy, curves, and predictions
 - Generate reliability figures (confusion matrix, reliability diagram, coverage, confidence)
+- Persist the fitted model and score new pasted text live in the dashboard
 - Provide a Streamlit dashboard for report-card review and triage
 - Run unit tests and a GitHub Actions CI quality gate
 
@@ -93,7 +94,6 @@ This project does **not**:
 - Replace human reviewers or policy teams
 - Provide real-time or streaming inference
 - Include drift monitoring or automatic retraining
-- Persist a trained model for live single-text inference (the dashboard triage tab demonstrates UI format using saved test predictions)
 
 A production detector would need stronger models, governance, live monitoring, adversarial testing, and human escalation workflows.
 
@@ -108,6 +108,7 @@ A production detector would need stronger models, governance, live monitoring, a
 - **Calibration metrics** (ECE, Brier) alongside accuracy and macro-F1
 - **Coverage curve** sweeping thresholds for the coverage-vs-performance tradeoff
 - **Abstention policy artifact** with a recommended threshold for target coverage
+- **Live single-text inference** via a persisted model bundle (`outputs/model.joblib`)
 - **Machine-readable artifacts** (JSON/CSV) for analysis, audits, and the dashboard
 - **Reliability figures** for the report card
 - **Streamlit dashboard** for review and triage
@@ -171,7 +172,8 @@ Detector-Reliability-Report-Card/
 ├── src/
 │   ├── __init__.py
 │   ├── pipeline.py
-│   ├── io.py
+│   ├── inference.py
+│   ├── io_utils.py
 │   ├── clean.py
 │   ├── split.py
 │   ├── features.py
@@ -309,12 +311,12 @@ Example results from the included example dataset:
 | Metric | Example value |
 |---|---|
 | Accuracy | 0.739 |
-| Macro-F1 | 0.617 |
-| ECE | 0.068 |
-| Brier | 0.349 |
-| Recommended threshold | 0.66 |
-| Estimated coverage | 0.725 |
-| Estimated accuracy at threshold | 0.820 |
+| Macro-F1 | 0.614 |
+| ECE | 0.096 |
+| Brier | 0.372 |
+| Recommended threshold | 0.61 |
+| Estimated coverage | 0.710 |
+| Estimated accuracy at threshold | 0.816 |
 </div>
 
 > These values come from a small example dataset and should not be read as real-world detection performance. They are reproducible with the default seed but may shift slightly across scikit-learn/NumPy versions.
@@ -393,7 +395,7 @@ Explore threshold tradeoffs interactively: what threshold gives ~70% auto-decisi
 <img width="900" alt="Triage UI tab" src="https://github.com/user-attachments/assets/e7bb5eeb-76fa-4dcb-b795-da2bad587447" />
 </div>
 
-Shows what a decision-safe output looks like: predicted class, confidence, auto-decide vs abstain, and a probability breakdown. This tab uses saved test predictions to demonstrate UI format; real single-text inference would require persisting and loading the trained model.
+Runs the saved model on text you paste and shows the decision-safe output: predicted class, confidence, auto-decide vs abstain, and a probability breakdown. The model is loaded from `outputs/model.joblib`, which the pipeline writes on each run (click **Run / Refresh** once if it is missing).
 
 ### Notes
 
@@ -459,8 +461,9 @@ The project separates responsibilities across small, single-purpose modules:
 
 | Module | Purpose |
 |---|---|
-| `src/pipeline.py` | Orchestration: train → evaluate → save artifacts/plots |
-| `src/io.py` | CSV/JSON read and write helpers |
+| `src/pipeline.py` | Orchestration: train → evaluate → save artifacts/plots/model |
+| `src/inference.py` | Load the saved model and score raw text |
+| `src/io_utils.py` | CSV/JSON read and write helpers |
 | `src/clean.py` | Column detection + text/label normalization |
 | `src/split.py` | Stratified train/val/test split |
 | `src/features.py` | Word/char TF-IDF vectorizer configs |
@@ -479,7 +482,6 @@ This project has important limitations:
 - The dataset is small and illustrative, not representative
 - Results do not prove real-world AI-text detection performance
 - Models are TF-IDF baselines, not state-of-the-art detectors
-- The triage tab is a demo and does not run live single-text inference
 - No drift monitoring, streaming inference, or retraining is included
 - No fairness, robustness, or adversarial review is included
 - The abstention policy is an example, not an approved business rule
@@ -510,7 +512,6 @@ Any real deployment would require stronger models, expert review, monitoring, an
 
 ## Future Improvements
 
-- Persist the trained model and add live single-text inference in the dashboard
 - Add slice audits (language, domain, length, post-edit intensity)
 - Add drift monitoring (confidence, class mix, calibration over time)
 - Add cost-aware abstention (minimize error cost + review cost)
@@ -525,6 +526,7 @@ Any real deployment would require stronger models, expert review, monitoring, an
 - pandas
 - NumPy
 - scikit-learn
+- joblib
 - matplotlib
 - Streamlit
 - Plotly
